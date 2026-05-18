@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PL-300 Practice Exam</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --accent: #1f6feb;
+    --accent-hover: #388bfd;
+    --correct: #238636;
+    --correct-light: #2ea043;
+    --incorrect: #b62324;
+    --incorrect-light: #da3633;
+    --warn: #9e6a03;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #6e7681;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ===== LANDING ===== */
+  #landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .landing-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .landing-header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .landing-header h1 span {
+    color: var(--accent-hover);
+  }
+
+  .landing-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+
+  .exam-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .exam-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .exam-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+  }
+
+  .exam-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(31, 111, 235, 0.15);
+  }
+
+  .exam-card:hover::before { transform: scaleX(1); }
+
+  .exam-card.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .exam-card .exam-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--accent-hover);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .exam-card .exam-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .exam-card .exam-count {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  .exam-card .coming-soon {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.7rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== EXAM ===== */
+  #exam-view { display: none; min-height: 100vh; }
+
+  .exam-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    transition: all 0.15s;
+  }
+
+  .back-btn:hover {
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
+
+  .exam-title-bar {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .progress-info {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    max-width: 300px;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  /* ===== QUESTION AREA ===== */
+  .question-area {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .question-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .q-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .q-category {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .q-multi-badge {
+    font-size: 0.72rem;
+    background: var(--warn);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .question-text {
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+
+  .question-exhibit {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+
+  .question-exhibit table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .question-exhibit th {
+    background: var(--surface2);
+    color: var(--text-muted);
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .question-exhibit td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .question-exhibit tr:nth-child(even) td { background: var(--surface2); }
+
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .option-item:hover {
+    border-color: var(--accent);
+    background: rgba(31, 111, 235, 0.05);
+  }
+
+  .option-item.selected {
+    border-color: var(--accent);
+    background: rgba(31, 111, 235, 0.1);
+  }
+
+  .option-item.revealed-correct {
+    border-color: var(--correct-light);
+    background: rgba(35, 134, 54, 0.1);
+  }
+
+  .option-item.revealed-incorrect {
+    border-color: var(--incorrect-light);
+    background: rgba(182, 35, 36, 0.1);
+  }
+
+  .option-item.revealed-missed {
+    border-color: var(--correct-light);
+    background: rgba(35, 134, 54, 0.07);
+    opacity: 0.8;
+  }
+
+  .option-marker {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-top: 1px;
+    transition: all 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .option-item.selected .option-marker {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .option-item.revealed-correct .option-marker {
+    background: var(--correct);
+    border-color: var(--correct-light);
+    color: #fff;
+  }
+
+  .option-item.revealed-incorrect .option-marker {
+    background: var(--incorrect);
+    border-color: var(--incorrect-light);
+    color: #fff;
+  }
+
+  .option-item.revealed-missed .option-marker {
+    background: transparent;
+    border-color: var(--correct-light);
+    color: var(--correct-light);
+  }
+
+  .option-text { flex: 1; }
+
+  /* ===== NAV BUTTONS ===== */
+  .nav-buttons {
+    justify-content: space-between;
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--text-muted); }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-submit {
+    background: #2ea043;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .btn-submit:hover { background: #3fb950; }
+
+  /* ===== TOPBAR SUBMIT ===== */
+  .topbar-submit-btn {
+    font-size: 0.8rem;
+    padding: 7px 14px;
+    flex-shrink: 0;
+  }
+
+  /* ===== MINI NAV ===== */
+  .mini-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .mini-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-size: 0.68rem;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .mini-dot:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .mini-dot-answered {
+    background: rgba(31, 111, 235, 0.15);
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
+
+  .mini-dot-current {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .mini-nav-ellipsis {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    padding: 0 2px;
+  }
+
+  /* ===== RESULTS ===== */
+  #results-view { display: none; min-height: 100vh; padding: 40px 24px; }
+
+  .results-header {
+    max-width: 860px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+
+  .score-ring {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 24px;
+    position: relative;
+  }
+
+  .score-ring svg { transform: rotate(-90deg); }
+
+  .score-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-pct {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .results-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .results-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .results-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin: 24px 0;
+  }
+
+  .stat-item { text-align: center; }
+
+  .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .stat-value.correct { color: var(--correct-light); }
+  .stat-value.incorrect { color: var(--incorrect-light); }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .review-section {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .review-section h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+  }
+
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--incorrect-light);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .review-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .review-q-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--incorrect);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .review-q-text {
+    font-size: 0.93rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .review-answers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 12px 0;
+  }
+
+  .review-answer-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.88rem;
+    padding: 6px 10px;
+    border-radius: 4px;
+  }
+
+  .review-answer-row.your-wrong {
+    background: rgba(182, 35, 36, 0.1);
+    border: 1px solid rgba(218, 54, 51, 0.3);
+  }
+
+  .review-answer-row.correct-ans {
+    background: rgba(35, 134, 54, 0.1);
+    border: 1px solid rgba(46, 160, 67, 0.3);
+  }
+
+  .review-answer-row .ans-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-top: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .review-answer-row.your-wrong .ans-label { color: var(--incorrect-light); }
+  .review-answer-row.correct-ans .ans-label { color: var(--correct-light); }
+
+  .review-explanation {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--surface2);
+    border-radius: 4px;
+    font-size: 0.87rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    border-left: 2px solid var(--accent);
+  }
+
+  .review-explanation strong {
+    display: block;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .results-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 32px 0;
+  }
+
+  /* ===== STATEMENT TABLE ===== */
+  .stmt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+
+  .stmt-table th {
+    background: var(--surface2);
+    color: var(--text-muted);
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+  }
+
+  .stmt-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  .stmt-table tr:nth-child(even) td:first-child { background: rgba(255,255,255,0.02); }
+
+  /* ===== CODE ===== */
+  .code-block {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    color: #a5d6ff;
+    overflow-x: auto;
+    margin: 12px 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    .landing-header h1 { font-size: 1.6rem; }
+    .exam-grid { grid-template-columns: repeat(2, 1fr); }
+    .results-stats { gap: 16px; }
+    .topbar-left { gap: 8px; }
+    .exam-title-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LANDING ===== -->
+<div id="landing">
+  <div class="landing-header">
+    <h1>PL-300 <span>Practice Exams</span></h1>
+    <p>Microsoft Power BI Data Analyst certification preparation</p>
+  </div>
+  <div class="exam-grid">
+    <div class="exam-card" onclick="startExam(1)">
+      <span class="exam-num">01</span>
+      <div class="exam-label">Exam 1</div>
+      <div class="exam-count">63 questions</div>
+    </div>
+    <div class="exam-card disabled">
+      <span class="exam-num">02</span>
+      <div class="exam-label">Exam 2</div>
+      <span class="coming-soon">Coming soon</span>
+    </div>
+    <div class="exam-card disabled">
+      <span class="exam-num">03</span>
+      <div class="exam-label">Exam 3</div>
+      <span class="coming-soon">Coming soon</span>
+    </div>
+    <div class="exam-card disabled">
+      <span class="exam-num">04</span>
+      <div class="exam-label">Exam 4</div>
+      <span class="coming-soon">Coming soon</span>
+    </div>
+    <div class="exam-card disabled">
+      <span class="exam-num">R</span>
+      <div class="exam-label">Renewal Exam</div>
+      <span class="coming-soon">Coming soon</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXAM VIEW ===== -->
+<div id="exam-view">
+  <div class="exam-topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="confirmExit()">&#8592; Exit</button>
+      <div class="exam-title-bar" id="topbar-title">Exam 1</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-info" id="progress-info">1 / 63</div>
+    <button class="btn btn-submit topbar-submit-btn" id="topbar-submit" onclick="confirmSubmit()">Submit Answers</button>
+  </div>
+  <div class="question-area" id="question-area"></div>
+</div>
+
+<!-- ===== RESULTS VIEW ===== -->
+<div id="results-view">
+  <div class="results-header">
+    <div class="score-ring">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#21262d" stroke-width="10"/>
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#1f6feb" stroke-width="10"
+          stroke-dasharray="364.4" id="score-arc" stroke-dashoffset="364.4"
+          stroke-linecap="round"/>
+      </svg>
+      <div class="score-ring-text">
+        <div class="score-pct" id="score-pct">0%</div>
+        <div class="score-label">Score</div>
+      </div>
+    </div>
+    <div class="results-title" id="results-title">Results</div>
+    <div class="results-subtitle" id="results-subtitle"></div>
+    <div class="results-stats">
+      <div class="stat-item">
+        <div class="stat-value correct" id="stat-correct">0</div>
+        <div class="stat-label">Correct</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value incorrect" id="stat-incorrect">0</div>
+        <div class="stat-label">Incorrect</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+    </div>
+  </div>
+  <div class="results-actions">
+    <button class="btn btn-secondary" onclick="goHome()">Back to Home</button>
+    <button class="btn btn-primary" onclick="retakeExam()">Retake Exam</button>
+  </div>
+  <div class="review-section" id="review-section"></div>
+</div>
+
+<script>
+// ===== EXAM DATA =====
+const EXAMS = {
+  1: {
+    title: "Exam 1",
+    questions: [
+      {
+        id: 1,
+        text: "You have some new staff joining your Power BI team. To help them get started in Power BI Desktop, you want to create a way for them to connect to the data sources that you are using on in your project. All they will need to do to connect to the data is enter their user credentials to authenticate. How can you achieve this?",
+        type: "single",
+        options: [
+          "Create a dynamic M query",
+          "Use an Excel Macro to build connections",
+          "Create a PBIDS file with your key data sources",
+          "Create a template in lineage view"
+        ],
+        correct: [2],
+        explanation: "You can create a PBIDS file to streamline the experience for new or beginner report creators in your organization. If you create the PBIDS file from existing reports, it's easier for beginning report authors to build new reports from the same data. A dynamic M query does not assist in enabling data source connections. An Excel Macro cannot be used to create a template for a Power BI report. You cannot create a data template in the lineage view in Power BI Service."
+      },
+      {
+        id: 2,
+        text: "You use an R script to build a custom visual. However, you find that you cannot see data marked N/A and you are getting an error when importing your data as a list. What could be TWO reasons for these issues?",
+        type: "multi",
+        options: [
+          "NA is transformed into NULL by Power BI",
+          "You have not used the correct R version",
+          "Power BI only supports R dataframes",
+          "You need to first install the library tidyr"
+        ],
+        correct: [0, 2],
+        explanation: "Values that are N/A in your data are translated to NULL values in Power BI Desktop. Only data frames are imported into Power BI, so be sure to represent the data you want to import in a data frame. Power BI does not support lists, matrices and other data structures. The version of R will not influence these issues. The tidyr library is not required; it is used for changing the layout of your data sets."
+      },
+      {
+        id: 3,
+        text: "You have an inactive relationship between your date table and your shipping table. How would you use an inactive relationship in a measure?",
+        type: "single",
+        options: [
+          "Use the LOOKUPVALUE() function",
+          "Delete the active relationship and make the new relationship active",
+          "Use the USERELATIONSHIP() function",
+          "Change the crossfilter direction to both in the modelling tab"
+        ],
+        correct: [2],
+        explanation: "The USERELATIONSHIP() function specifies an existing relationship to be used in the evaluation of a DAX expression. Do not use the LOOKUPVALUE() function — it retrieves a value from a table, but we need to connect a relationship for the measure. Do not delete an active relationship as this will break any existing visuals created. The crossfilter direction is used to allow the data to be filtered in either direction, not to activate an inactive relationship."
+      },
+      {
+        id: 4,
+        text: "Your client has asked you whether you can create data alerts for all of the key visuals on your dashboard. Which two visuals can you NOT create a data alert for?",
+        type: "multi",
+        options: [
+          "Funnel chart",
+          "KPI chart",
+          "Stacked column chart",
+          "Gauge chart",
+          "Card chart"
+        ],
+        correct: [0, 2],
+        explanation: "Alerts can only be set on gauges, KPIs, and cards. A funnel chart and a stacked column chart do not support alerts."
+      },
+      {
+        id: 5,
+        text: "You build a key influencers visual and you want to see how sales amount is affected by product category and product color. How do you complete the three fields (Analyze, Explain by, Expand by)?",
+        type: "single",
+        options: [
+          "Analyze → Sales[Sales Quantity]; Explain by → Product[Category], Product[Color]",
+          "Analyze → Sales[Sales Amount]; Expand by → Product[Category], Product[Model]",
+          "Analyze → Sales[Sales Quantity]; Explain by → Product[Category]; Expand by → Product[Color]",
+          "Analyze → Sales[Sales Amount]; Explain by → Product[Category], Product[Color]"
+        ],
+        correct: [3],
+        explanation: "As we want to analyze the sales amount, use Sales[Sales Amount] in the Analyze well. We want to use product category and color, so add Product[Category] and Product[Color] to the Explain by well. Do not use Sales[Sales Quantity] as we were asked about sales amount. Do not use Expand by. The Expand by well is used when analyzing a measure or summarized field."
+      },
+      {
+        id: 6,
+        text: "You work for an electric car manufacturer and you need to import a Supplier table into your data model. The Supplier table lists the supplier id, full name, short name and address. When reviewing the data in Power BI, you want to check the distinct and unique rows for each column. Which data quality option should you use?",
+        type: "single",
+        options: [
+          "Column profile",
+          "Monospaced",
+          "Column distribution",
+          "Show whitespace",
+          "Column quality"
+        ],
+        correct: [2],
+        explanation: "The Column distribution option shows the count of distinct and unique rows for each column. The Column profile option shows a value distribution along with some statistical summary figures. The Column quality shows the percentage of Valid, Error and Empty rows. The monospaced option sets all the data's preview font to monospaced. The show whitespace option displays whitespace and newline characters."
+      },
+      {
+        id: 7,
+        text: "You work for a large multinational company that has 23 departments. You have been tasked with creating a report with all the first aid trained staff. You need to create the same report for each department. How can you create the same report for each department in the most efficient manner?",
+        type: "single",
+        options: [
+          "Create separate Power BI Desktop reports for each department and email the PBIX file",
+          "Add a parameter to the report to filter department",
+          "Create a separate workspace for each department and create a report in each",
+          "Create a separate dataset for each department and add a separate report"
+        ],
+        correct: [1],
+        explanation: "You can add a parameter on the report to filter the department. This allows you to use the same report across all departments. You should not create separate Power BI Desktop files as this is an inefficient and time consuming way to distribute 23 reports. You should not create separate workspaces for each department as this duplicates the report and is time consuming. You should not create a separate dataset for each department as this also duplicates the report and is time consuming."
+      },
+      {
+        id: 8,
+        text: "You have produced reports for a space tourism startup. The founder has three requirements:\n1. When Power BI Service launches, I want the competition report to be displayed on their screen.\n2. For the financial dashboard, I want the classification of the data clearly displayed.\n3. I want you to highlight particular reports because it is valuable and worthwhile for others to use. I also don't want you to ask permission from the Power BI Admin each time.\n\nFor the above requirements, classify them as either: Certified / Promoted / Featured / Sensitivity Label",
+        type: "single",
+        options: [
+          "Promoted / Certified / Featured",
+          "Sensitivity Label / Featured / Promoted",
+          "Featured / Sensitivity Label / Promoted",
+          "Certified / Sensitivity Label / Promoted"
+        ],
+        correct: [2],
+        explanation: "When a report is marked as featured, it will appear on the Power BI home page. To show data classification on a dashboard, you can use sensitivity labels — these labels appear next to the dashboard name. Promotion is a way to highlight the content you think is valuable and worthwhile for others to use, and it does not need any admin permissions. Certification means that the content meets the organization's quality standards and does require admin permission."
+      },
+      {
+        id: 9,
+        text: "You work for an electric scooter manufacturer. You have a report with five pages, and you have been asked to filter all five pages when you select a particular scooter category on the first page. What are the two ways you could do this?",
+        type: "multi",
+        options: [
+          "Add a page level filter on all five pages",
+          "Create a report level filter using category in the Filter all pages well",
+          "Use a single button and set the action type to bookmark",
+          "Select paginated report and configure the settings",
+          "Create a slicer for category on each page and then Sync slicers on all pages"
+        ],
+        correct: [1, 4],
+        explanation: "A report level filter will create a filter on all five pages of the report. Similarly, if each page has a slicer for category, you can use Sync slicers to filter all pages together. A page filter will only apply to the one page. A single button cannot be used with a bookmark across multiple pages. A paginated report is for creating pixel-perfect reports and is not used to filter reports across multiple pages."
+      },
+      {
+        id: 10,
+        text: "A colleague built a Power BI desktop report. Your colleague imported a flat file into Power BI from his local machine. You have inherited the Power BI report and you need to update the source for the file. How would you go about this?",
+        type: "single",
+        options: [
+          "On the home ribbon, click on Properties and change the file path",
+          "Click on the Applied step Source and click on the cog to change the file path",
+          "On the home ribbon, click on Manage → then File, then change the file path",
+          "Click on the Applied step Changed Type and click on the cog in the corner to change the file location"
+        ],
+        correct: [1],
+        explanation: "You can adjust the source location of your file in Power Query Editor by clicking on the Source applied step. In the right corner, click the cog and update the file path. The home ribbon Properties button is used to change the name and description of the query, not the file location. The Manage button is used to delete, duplicate or reference a query and cannot be used to change a file's path."
+      },
+      {
+        id: 11,
+        text: "A colleague asks you how to publish an app in Power BI. What are the three most important parts of publishing an app? Select THREE.",
+        type: "multi",
+        options: [
+          "On the permissions tab, decide who has access to the app",
+          "On the title tab, fill in the name and description to help people find the app",
+          "Before releasing the app, create a digital signature, so people know who built the app",
+          "On the navigation tab, select the content to be visible in the app",
+          "Click the Sync to organization button",
+          "On the setup tab, fill in the name and description to help people find the app"
+        ],
+        correct: [0, 3, 5],
+        explanation: "When publishing an app, fill in the name and description in the setup tab. Next, under the navigation tab, select the content you want visible in the app. Finally, on the permissions tab, decide who has access to the app. There is no title tab — the only three tabs are setup, navigation and permissions. You do not need to create a digital signature. There is no Sync to organization button."
+      },
+      {
+        id: 12,
+        text: "You are a BI analyst for a digital marketing company. You have built a complex report that requires many custom DAX measures and tables. After releasing your report, senior management complains that it takes too long to load some key visuals. How would you identify the cause of the poorly performing report elements?",
+        type: "single",
+        options: [
+          "Use the Dataverse button to drill into likely performance issues",
+          "Use the Performance Analyzer to examine report element performance",
+          "Use the cross report drillthrough feature to examine performance across the report",
+          "Run an R script to determine the performance issues in report elements"
+        ],
+        correct: [1],
+        explanation: "In Power BI Desktop, you can find out how each of your report elements are performing using the Performance Analyzer — you can see and record logs that measure how your report elements perform, including DAX formulas and visuals performance timing when users interact with them. Dataverse lets you store and manage data used by business applications and cannot be used for performance issues. A drillthrough allows users to drillthrough on a visual to a focused page and cannot be used for performance diagnostics."
+      },
+      {
+        id: 13,
+        text: "You have a Premium workspace at your company and you want to use automatic page refresh. What are TWO key considerations to enable automatic page refresh?",
+        type: "multi",
+        options: [
+          "You must first disable sharing of your workspace",
+          "Your capacity administrator must enable the feature",
+          "Your interval must be greater than the minimum refresh interval",
+          "Refresh time in a premium capacity is rounded to the nearest 30 minutes"
+        ],
+        correct: [1, 2],
+        explanation: "You cannot use automatic data refresh unless your capacity administrator has enabled the feature. Secondly, the capacity administrator can set a minimum refresh interval. If your interval is less than the minimum refresh interval, the Power BI service overrides your interval to respect the minimum interval set by your capacity administrator. You do not need to disable sharing of your workspace. The refresh time is not rounded to the nearest 30 minutes."
+      },
+      {
+        id: 14,
+        text: "A medical devices company has contracted you to investigate their transportation provider's performance. The company has a series of metrics they use to monitor the transportation provider's performance, including on-time pickup, on-time delivery, billing accuracy etc. You are asked to find potential factors that contribute to the transportation provider's performance. What sort of visualization can help?",
+        type: "single",
+        options: [
+          "Scatter chart",
+          "Q&A chart",
+          "Key influencers chart",
+          "Decomposition tree chart"
+        ],
+        correct: [2],
+        explanation: "You should use a key influencers chart. A key influencers chart helps you understand the factors that drive a metric. A decomposition tree is an AI tool used for ad hoc exploration and conducting root cause analysis. A scatter chart is helpful to show outliers across a large data set. A Q&A visual helps users explore the data from questions using natural language algorithms."
+      },
+      {
+        id: 15,
+        text: "The board of your company would like to see a report on their mobiles. So you go ahead and optimize the report for mobile. For each of the following statements, select Yes if the statement is true. Otherwise, select No.\n\n• In the mobile layout, you can double-click the visual in the visualization pane and the visual will be added to the canvas.\n• You cannot set the layering order of visuals on the mobile layout canvas.\n• If you've defined a background color for a report page, the mobile-optimized report will have the same background color.",
+        type: "single",
+        options: [
+          "Yes / No / No",
+          "No / No / Yes",
+          "Yes / Yes / No",
+          "Yes / No / Yes"
+        ],
+        correct: [3],
+        explanation: "There are two ways to add a visual to a mobile layout: drag it from the Page visuals pane to the phone canvas, or double-click the visual in the visualization pane (Yes). You CAN set the layering order of visuals on the mobile layout canvas — the order of the list reflects the layer ordering on the canvas (No for statement 2). A mobile-optimized report will follow the background color of the report page (Yes)."
+      },
+      {
+        id: 16,
+        text: "Your company buys out a transportation company. You find that the company has several tables for customer records, all with the same structure and headings. You need to combine these tables to form a new single table for a customer segmentation analysis prior to merging the data into the parent company's system. What transformation should you use?",
+        type: "single",
+        options: [
+          "Merge queries",
+          "Append queries as new",
+          "Append queries",
+          "Merge queries as new"
+        ],
+        correct: [1],
+        explanation: "The append query creates a single table by adding the contents of one or more tables to another. An append query is similar to a Union query in SQL. Since the question asks for a new table, you should use Append query as new. You should not use a merge transformation — a merge joins two existing tables together based on matching keys and is used to add columns to a data set (similar to a SQL join), not to add rows."
+      },
+      {
+        id: 17,
+        text: "You are asked by management to allow a consultant's custom Power BI visual. However, by default, management wants no custom visuals. How would you enable the consultant's visual while maintaining the default requirement in the most efficient manner?",
+        type: "single",
+        options: [
+          "Temporarily disable the tenant setting for custom visualization",
+          "Use Power BI Desktop .pbiviz files with the custom visual",
+          "Add the custom visuals to the organizational store",
+          "Build a separate Power BI service instance for the custom visual"
+        ],
+        correct: [2],
+        explanation: "Custom Power BI visuals created privately for your organization can be uploaded to the organizational store. This saves overhead and management time. The custom visuals are easily accessed by Power BI users within the organization while still respecting the external restriction for custom visuals. Temporarily disabling the tenant settings is not an efficient way to manage your configuration. Building a separate instance of Power BI service is an expensive and inefficient solution."
+      },
+      {
+        id: 18,
+        text: "What Text Analytics AI Insights are NOT available in Power BI?",
+        type: "single",
+        options: [
+          "Language Detection",
+          "Sentiment Analysis",
+          "Key Phrase Extraction",
+          "Word Sense Disambiguation"
+        ],
+        correct: [3],
+        explanation: "AI insights supports language detection, sentiment analysis and key phrase extraction. Word sense disambiguation involves detecting the meaning of a word within its context (for example, 'light' can be used as a weight, a color or an electrical appliance). Word sense disambiguation is not available in Power BI."
+      },
+      {
+        id: 19,
+        text: "You create a Power BI report for a software company that uses AI for transportation companies. The company has a sales team across several countries and you create row-level security (RLS) in the model. In Power BI Desktop you create roles for each country e.g. USA, Canada, UK, France etc. You add a DAX expression for each role and add an Azure Active Directory security group for the country to each role. A new user starts in France. What do you need to do for the new user such that they can only see the sales data for France?",
+        type: "single",
+        options: [
+          "In Power BI Desktop, edit the DAX expression on the role for France",
+          "In Power BI Service, change the Power BI workspace security and change the user's email address to contributor",
+          "Add the user to the Azure Active Directory for France",
+          "In Power BI Service, use test as role and use the email address of the new employee"
+        ],
+        correct: [2],
+        explanation: "You add the user to the Azure Active Directory for France. The row-level security groups have been configured to control the membership of each role, so you should change their membership of Azure Active Directory security groups. You should not edit the DAX expression in Power BI Desktop — this just defines the row filters for the role. Do not add the new employee to the workspace as a contributor, as the user will be able to see all the data. Do not use test as role — this is for previewing data and not for assigning roles."
+      },
+      {
+        id: 20,
+        text: "You build a dashboard that has an important gauge visual for a furniture manufacturer. The head of manufacturing wants an alert whenever the gauge exceeds a certain value. What are the two options for configuring an alert in Power BI Service?",
+        type: "multi",
+        options: [
+          "Use Microsoft Dataverse alert API",
+          "Send an email",
+          "Send a notification to mobile",
+          "Use Microsoft Power Automate to trigger additional actions"
+        ],
+        correct: [1, 3],
+        explanation: "You can send an email or you can use Microsoft Power Automate to trigger an action. You can then use Power Automate to send a notification to Microsoft Teams, text message, social media post or email. There is no Microsoft Dataverse alert API. Notifications of alerts are controlled by settings in the mobile app and cannot be configured in Power BI service."
+      },
+      {
+        id: 21,
+        text: "What is NOT part of the Power BI Service dashboard theme?",
+        type: "single",
+        options: [
+          "Dark",
+          "Light",
+          "Color-blind friendly",
+          "Custom",
+          "Tab-order friendly"
+        ],
+        correct: [4],
+        explanation: "In Power BI Service you can adjust a dashboard's theme to one of four options: Light, Dark, Color-blind friendly and custom JSON. Tab-order is created in a report under Selection > Tab order and is not a theme."
+      },
+      {
+        id: 22,
+        text: "You decide to add a KPI visual for your company's dashboard. You need to show total units this year, show the historic values at a monthly level and for the comparison use total units last year. What fields should be used in the KPI wells: Indicator, Trend Axis and Target Goals?",
+        type: "single",
+        options: [
+          "Indicator: Sales Units This Year, Trend axis: Fiscal Month, Target Goals: Sales Units This year",
+          "Indicator: Sales Units This Year, Trend axis: Fiscal Month, Target Goals: Sales Units Last year",
+          "Indicator: Sales Units Last Year, Trend axis: Fiscal Month, Target Goals: Sales Units This year",
+          "Indicator: Sales Units This Year, Trend axis: Fiscal Year, Target Goals: Sales Units Last year"
+        ],
+        correct: [1],
+        explanation: "The indicator is the measure to plot, so use Sales Units This Year. The trend axis is the period to show the data, so use Fiscal Month. Lastly, the Target Goal is the field for comparison, so use Sales Units Last Year."
+      },
+      {
+        id: 23,
+        text: "You import a customer table from a flat file into your data model. You have been asked to investigate the performance of your model and decide to check all the data sources' view native query. When you come to the customer table, you find that the view native query does not display. What is a possible cause for view native query being disabled?",
+        type: "single",
+        options: [
+          "Flat files do not support query folding",
+          "In the transformation, there is a promoted headers step that blocks the native query",
+          "You have used import as the storage mode",
+          "There is row-level security on the dataset"
+        ],
+        correct: [0],
+        explanation: "View native query relies on query folding, the ability to generate a single query statement to retrieve and transform source data. A flat file, web, blob and common data service do not allow query folding. Hence, view native query is disabled. A promoted headers step is not relevant to whether query folding works or not. The import storage mode will still enable query folding for relational database sources. Row-level security is not relevant to data source query folding."
+      },
+      {
+        id: 24,
+        text: "You create a Power BI report for a hospital and use row-level security (RLS) for doctors and hospital managers. For each of the following statements, select Yes if the statement is true, otherwise select No.\n\n• Doctors will be able to see their wages\n• Setting the DAX filter on the 'doctors' role to [email address] = USERPRINCIPALNAME() allows doctors to see only their metrics\n• Setting the DAX filter for hospital managers role to FALSE() allows hospital managers to view all the data",
+        type: "single",
+        options: [
+          "Yes / Yes / No",
+          "Yes / Yes / Yes",
+          "Yes / No / No",
+          "No / Yes / No"
+        ],
+        correct: [0],
+        explanation: "Since you applied row-level security to doctors, they will be able to see their wages and metrics (Yes). The DAX function USERPRINCIPALNAME() returns the user's email address. When the DAX function sets [email address] = USERPRINCIPALNAME(), we are using a dynamic row-level security method that compares the user's email address to that in the employee table (Yes). When the DAX filter for Hospital managers is set to TRUE(), the manager will see all the data. When set to FALSE(), no data will be shown — so FALSE() does NOT allow managers to view all data (No)."
+      },
+      {
+        id: 25,
+        text: "You import the Transport table into your model and have been instructed to find the totals across destination ZIP codes. Which summarization option would you recommend for aggregating the three columns: DestinationZIP (Text), Weight (Decimal), Units (Whole Number)?",
+        type: "single",
+        options: [
+          "MAX / NONE / SUM",
+          "COUNT / SUM / NONE",
+          "NONE / SUM / SUM",
+          "NONE / MAX / SUM"
+        ],
+        correct: [2],
+        explanation: "The destination ZIP code is a text field, so do not use a summarization option (NONE). The weight is a decimal and we are interested in the total values, so use the SUM aggregation. Similarly, Units is a whole number and we are interested in the total values, so again use SUM."
+      },
+      {
+        id: 26,
+        text: "Your manager at a construction materials company wants to know how category sales have changed over time with an animation. You decide that a chart with an animation to show changes across months would help visualize the data. How would you go about achieving this objective?",
+        type: "single",
+        options: [
+          "Create a line chart and add month to the axis well",
+          "Create a waterfall chart and add month to the breakdown well",
+          "Create a scatter chart and add month to the play axis well",
+          "Create a tree map and add month to the details well"
+        ],
+        correct: [2],
+        explanation: "The play axis is a feature on a scatter chart that animates changes with time. Create your scatter chart and then in the play axis well, add your date period. Below the chart you will now see a play button and a time axis. You should not use a line chart with month in the axis well, as this does not animate the time series. A waterfall chart is useful for understanding how an initial value is affected by a series of positive and negative changes. Treemaps are used to display hierarchical data as a set of nested rectangles."
+      },
+      {
+        id: 27,
+        text: "You are asked to create a measure to calculate the sales amount including the value added tax with the ability to go to the lowest level of detail (row level). In addition, the value added tax is only relevant for order dates after Jan/1/2018. Prior to 2018, there is no tax applicable. How would you achieve this goal using a DAX expression?",
+        type: "single",
+        options: [
+          "SUM(sales[Sales Amount]) + SUM(sales[Sales Tax])",
+          "SUMX(sales, if(sales[OrderDate]>=DATE(2018,1,1), sales[Sales Amount]+sales[Sales Tax], sales[Sales Amount]))",
+          "SUMX(filter(sales, sales[OrderDate]>=DATE(2018,1,1)), sales[Sales Amount]+sales[Sales Tax])",
+          "SUM(sales, if(sales[OrderDate]>=1/1/2018, sales[Sales Amount]+sales[Sales Tax], sales[Sales Amount]))"
+        ],
+        correct: [1],
+        explanation: "As we want to be able to calculate at the row level, we use SUMX. Within the SUMX expression, we can add an IF statement to test whether the date is after Jan/1/2018. If the statement is true then add the sales tax, otherwise, show the sales amount. Answer A does not have a conditional statement for the order date. Answer C only shows values after 2018 — before 2018, the measure returns 0."
+      },
+      {
+        id: 28,
+        text: "You are the Power BI administrator. Your company policy states that only DA-100 certified people are allowed to create new workspaces. The people who are DA-100 certified are grouped into a security group called DA100Workspace. New users who have recently completed their DA-100 certification are assigned to the DA100Workspace security group but cannot create new workspaces. What three actions do you need to take in sequence in the admin portal to fix this issue?\n\ni. Navigate to Power BI admin portal and select Tenant settings\nii. Navigate to office 365 admin security and select settings\niii. Choose specific security groups to apply to and add DA100Workspace\niv. Click on Workspace settings and then click on create workspaces\nv. Click refresh",
+        type: "single",
+        options: [
+          "i / iv / iii",
+          "ii / iii / v",
+          "ii / iv / v",
+          "i / ii / iii"
+        ],
+        correct: [0],
+        explanation: "The steps to fix the issue in the Power BI admin portal are: (1) Navigate to Power BI admin portal and select Tenant settings, (2) Click on Workspace settings and then click on create workspaces, (3) Choose specific security groups to apply to and add DA100Workspace. You should not use office 365 security to change the workspace settings — these must be done in the Power BI admin portal. There is no refresh button to click; after you complete the three steps, you click the Apply button."
+      },
+      {
+        id: 29,
+        text: "You have built a dashboard for the board of a soft drink company. One of the board members wants to test several visuals from a report page and wants to immediately see the updates in the dashboard after you make changes. How would you go about doing this in the most efficient manner?",
+        type: "single",
+        options: [
+          "Create a new dashboard for every new request and pin the new tiles",
+          "Pin the report page as live to the dashboard",
+          "On the report page, select embed in dashboard",
+          "Create a hyperlink for the tiles and select embed in dashboard"
+        ],
+        correct: [1],
+        explanation: "Pin the report page as live to a dashboard. Any changes you make to the visualizations in the report editor, like adding a filter or changing the fields used in the chart, are reflected immediately in the dashboard tile as well. Creating a new dashboard every time a request is made is highly inefficient. There is no 'select embed in dashboard' option on the report page, and there is no embed hyperlink in dashboard option."
+      },
+      {
+        id: 30,
+        text: "You work for a rapid fashion company and are tasked with calculating the percentage change in sales from last month. You are given a measure Sales Total that aggregates sales and you have a date table you built in DAX. How would you calculate last month's sales percentage change?",
+        type: "single",
+        options: [
+          "VAR SalesLastMonth = CALCULATE([Sales Total], DATEADD('Date'[Date],-1,MONTH))\nVAR SalesPercentageChange = DIVIDE([Sales Total]-SalesLastMonth, SalesLastMonth)\nReturn SalesPercentageChange",
+          "VAR SalesLastMonth = CALCULATE([Sales Total], PARALLELPERIOD('Date'[Date],-1,QUARTER))\nVAR SalesPercentageChange = DIVIDE([Sales Total]-SalesLastMonth, SalesLastMonth)\nReturn SalesPercentageChange",
+          "VAR SalesLastMonth = CALCULATE([Sales Total], SAMEPERIODLASTYEAR('Date'[Date]))\nVAR SalesPercentageChange = DIVIDE([Sales Total]-SalesLastMonth, SalesLastMonth)\nReturn SalesPercentageChange",
+          "VAR SalesLastMonth = CALCULATE([Sales Total], DATEADD('Date'[Date],-1,MONTH))\nVAR SalesPercentageChange = Sales Total-SalesLastMonth\nReturn SalesPercentageChange"
+        ],
+        correct: [0],
+        explanation: "You can use DATEADD to look 1 month backward using DATEADD('Date'[Date],-1,MONTH). Using the DIVIDE function, you can calculate the difference between last month and the current month's value and divide by the previous month to get a % change. Answer B is not correct as PARALLELPERIOD uses Quarter instead of Month. Answer C is not correct because SAMEPERIODLASTYEAR looks at the previous year's value and not last month's value. Answer D is not correct because SalesPercentageChange does not divide by the previous month's value to get a percentage."
+      },
+      {
+        id: 31,
+        text: "Senior management wants you to add data classifications to your dashboards. For each of the following statements, select Yes if the statement is true. Otherwise, select No.\n\n• If data classification is turned on, all dashboards start out with a default classification type.\n• If you turn data classification off, all of the tags are remembered.\n• Each classification has a name, a shorthand tag and an optional URL.",
+        type: "single",
+        options: [
+          "Yes / Yes / Yes",
+          "No / Yes / No",
+          "No / No / Yes",
+          "Yes / No / Yes"
+        ],
+        correct: [3],
+        explanation: "When data classification is turned on in the tenant settings, all dashboards are given a default classification type (Yes). If you turn off data classification, none of the tags are remembered if you decide to switch on data classifications later (No). Lastly, each classification has a name and a shorthand tag. You can optionally add a URL with more information about your organization's classification guidelines and usage requirements (Yes)."
+      },
+      {
+        id: 32,
+        text: "You have created a measure for the percentage of sales subcategory to sales and wish to apply conditional formatting. The rule: if the value is less than 10%, shade the cell blue; if the value is greater than 10%, shade the cell green. How would you complete the conditional formatting table?",
+        type: "single",
+        options: [
+          "Format: Color Scale, Row 1: 0 / Number and 10 / Number, Row 2: 10 / Number and 100 / Number",
+          "Format: Field Value, Row 1: 0 / Percentage and 10 / Percentage, Row 2: 10 / Percentage and 100 / Percentage",
+          "Format: Rules, Row 1: 0 / Number and 0.1 / Number, Row 2: 0.1 / Number and 1 / Number",
+          "Format: Color Scale, Row 1: 0 / Percentage and 10 / Percentage, Row 2: 10 / Percentage and 100 / Percentage"
+        ],
+        correct: [2],
+        explanation: "When you have a specific set of requirements for conditional formatting, select the Rules format drop-down. The first row should be greater than the number 0 and less than the number 0.1 (since 0.1 is the number equivalent of 10%). On the second line, we want green for values greater than 0.1 but less than 1. You should not select Color Scale as you can only set a minimum and maximum across the entire range. Note: if you use Percent instead of Number for fields containing percentages, you may get unexpected results."
+      },
+      {
+        id: 33,
+        text: "You work for a wine maker who has a selection of white and red wines fermented in barrels. The process can take between 5 and 35 months. You need to create a bar chart that shows wine fermentation time in ranges of 5 months. When creating the bar chart, which four actions should you perform in sequence?",
+        type: "single",
+        options: [
+          "Select the fermentation time column, right click and select New Group → Set Group type to Bin → Set the Bin type to number of bins → Make the bin count 6",
+          "Set Group type to list → Select the fermentation time column, right click and select New Group → Set the Bin type to number of bins → Make the bin count 30",
+          "Select the fermentation time column, right click and select New Group → Set the Bin type to count of bins → Set Group type to Bin → Make the bin size 6",
+          "Select the fermentation time column, right click and select New Group → Set Group type to Bin → Make the bin count 30 → Set the Bin type to number of bins"
+        ],
+        correct: [0],
+        explanation: "You should: (1) Select the fermentation time column, right click and select New Group, (2) Set Group type to Bin, (3) Set the Bin type to number of bins, (4) Make the bin count 6. You should not set the bin count to 5. There are 30 months, each with bin size of 5, giving a bin count of 6. You should not set the bin size to 6 since the question specifically asks for ranges of 5 months."
+      },
+      {
+        id: 34,
+        text: "Your company has a current year target of last year's sales multiplied by an additional 10%. You have a date table called 'date' and a measure to sum sales called 'Sales Total'. How would you go about creating a DAX measure to calculate this?",
+        type: "single",
+        options: [
+          "VAR PreviousYearSales = SUMX([Sales Total], SAMEPERIODLASTYEAR('Date'[Date],-1,YEAR))\nVAR TargetSales = PreviousYearSales*1.1\nReturn TargetSales",
+          "VAR PreviousYearSales = CALCULATE([Sales Total], DATEADD('Date'[Date],-1,YEAR))\nVAR TargetSales = PreviousYearSales*1.1\nReturn TargetSales",
+          "VAR PreviousYearSales = CALCULATETABLE([Sales Total], DATEADD('Date'[Date],-1,YEAR))\nVAR TargetSales = PreviousYearSales*0.1\nReturn TargetSales",
+          "VAR PreviousYearSales = CALCULATE([Sales Total], PARALLELPERIOD('Date'[Date],-1,MONTH))\nVAR TargetSales = PreviousYearSales*1.1\nReturn PreviousYearSales"
+        ],
+        correct: [1],
+        explanation: "You should use CALCULATE and DATEADD to find last year's sales value, then multiply by 1.1 to get a 10% increase for the target. In answer A, you should not use SUMX as the first parameter is a table, not a measure. In answer C, you should not use CALCULATETABLE as the result returned is a table and we want a scalar value. Also the target sales figure is multiplied by 0.1, not 1.1. In answer D, we want last year's value not last month's, and the return statement should be for the target sales."
+      },
+      {
+        id: 35,
+        text: "You work for a cryptocurrency exchange as a BI analyst. You are tasked with creating a report for weekly trends across the asset ranges. Your source dataset has over 150 million rows. What two things can you do to optimize the report performance?",
+        type: "multi",
+        options: [
+          "Use the Direct Query storage mode for the dataset",
+          "Only use line charts for visuals",
+          "Use the Import storage mode for the dataset",
+          "Do not use tab or layer order",
+          "Create a summary table in the source data grouped by weekly volumes"
+        ],
+        correct: [0, 4],
+        explanation: "By using Direct Query for the storage mode, the data will not be held in the model. When a user views a visual, the queries will be sent to the database. Additionally, creating a summary table that is grouped by week will reduce the model size. Limiting the model to only line charts does not affect model performance. You should not use the import storage mode — import mode will bring all transactions into the model, giving you an extremely large model. Tab and layer orders do not affect model performance."
+      },
+      {
+        id: 36,
+        text: "You work for a bicycle manufacturer and you have created a bar chart with sales by category. Your boss wants to know the median sales, the 50th percentile of values in a column, rather than the total sales for each category. What are the two ways to achieve this goal?",
+        type: "multi",
+        options: [
+          "Create a new measure using the MEDIAN DAX function on the sales column",
+          "In the analytics pane, add a trendline",
+          "In the chart values well, right click on sales and change the summarization to Median",
+          "Create a new measure using the Count (distinct) DAX function on the sales column",
+          "In the chart values well, right click on sales and change the show value as to a percent of grand total"
+        ],
+        correct: [0, 2],
+        explanation: "The first way is to create a DAX measure using the MEDIAN function, e.g. Median of Sales = Median(sales[Sales Amount]). The other option is to right click sales in the values well and change the summarization type to Median. You should not add a trendline — this will not help you find the median value. You should not use Count (distinct) as we want the median not the count. You should not use the percent of grand total as this will give you the percentage of all category sales."
+      },
+      {
+        id: 37,
+        text: "Your users give you feedback that they would like your reports to have more interactivity. To answer, select the following feature for each requirement:\n\n• Edit the way visuals within the same page respond when a data point is selected.\n• Create a view of a report with specific filters applied.\n• A way for users to return to the previous page.\n\nFeatures: Back button / Tab selection / Bookmarks / Edit interactions / Format pane",
+        type: "single",
+        options: [
+          "Tab selection / Format pane / Back button",
+          "Edit interactions / Bookmarks / Back button",
+          "Edit interactions / Tab selection / Back button",
+          "Bookmarks / Edit interactions / Back button"
+        ],
+        correct: [1],
+        explanation: "To edit the way visuals interact with each other on a report page, use the Edit interactions button after you select a visual. Bookmarks are used to store a report page and its configuration so that you can return to the view later. You can set the filters and slicers in a bookmark to get the visual configurations set in a certain way. A back button has an arrow icon and when you select it, Power BI takes you back to the previous page."
+      },
+      {
+        id: 38,
+        text: "You find that your visuals on a report page are taking a long time to load. You want to find how each of your report elements, such as visuals and DAX formulas, are performing. What five actions should you take in sequence?\n\nPossible steps: Open performance analyzer and press start recording / Interact with the visuals / Restart Power BI / Press stop and review results / Open query diagnostics and press start recording / Click on SQL Server diagnostics / Check enable diagnostics logging / Create a blank report page",
+        type: "single",
+        options: [
+          "Restart Power BI → Open performance analyzer and press start recording → Check enable diagnostics logging → Press stop and review results",
+          "Create a blank report page → Restart Power BI → Click on SQL Server diagnostics → Interact with the visuals → Press stop and review results",
+          "Create a blank report page → Restart Power BI → Open performance analyzer and press start recording → Interact with the visuals → Press stop and review results",
+          "Restart Power BI → Open query diagnostics and press start recording → Interact with the visuals → Press stop and review results"
+        ],
+        correct: [2],
+        explanation: "The steps to the performance analyzer tool are: (1) Create a blank report page, (2) Restart Power BI, (3) Open performance analyzer and press start recording, (4) Interact with the visuals, (5) Press stop and review results. In answer A, you should first create a blank report page and you do not need to enable diagnostic logging. In answer B, SQL Server diagnostics is not available within Power BI. In answer D, Query diagnostics is a Power Query tool for processing at authoring/refresh time and does not tell you anything about visuals."
+      },
+      {
+        id: 39,
+        text: "You have a dataset in Power BI Service, and you want to use Quick Insights to get some ideas for a dashboard. However, you notice that Quick Insights are not working. What are the three possible reasons why Quick Insights is not working?",
+        type: "multi",
+        options: [
+          "You have uploaded data to Power BI",
+          "Your dataset uses Direct Query",
+          "Your dataset uses streaming",
+          "You have measures in your dataset",
+          "Your dataset is not statistically significant"
+        ],
+        correct: [1, 2, 4],
+        explanation: "Quick Insights doesn't work with DirectQuery, streaming, and PUSH datasets. Quick Insights only works with data uploaded to Power BI. Furthermore, some datasets can't generate insights because the data is not statistically significant. Uploaded data through import will work for Quick Insights. Measures will work with quick insights."
+      },
+      {
+        id: 40,
+        text: "You have two visuals: sales by year (left) and sales by category (right). You need to configure the visual interaction between the two charts. For each statement, select Yes or No:\n\n• If you do not want the sales by year chart to filter the sales by category chart, set the interaction behaviour to None.\n• If you want the sales by year chart to highlight the sales by category chart, select the sales by category chart and edit the interaction on the sales by year chart.\n• To focus on the proportion of sales by category for a selected year, you should set the interaction behaviour to Filter.",
+        type: "single",
+        options: [
+          "Yes / No / Yes",
+          "Yes / No / No",
+          "No / No / Yes",
+          "Yes / Yes / No"
+        ],
+        correct: [1],
+        explanation: "When you set the interaction behaviour to None, the visual is not affected by other charts (Yes). If you want the sales by year chart to highlight the sales by category chart, first select the sales by year chart and edit the interaction on the sales by category chart — not the other way around (No). To show a proportion of sales by category when you select a year column, you should use the Highlight interaction behaviour. If you use the Filter interaction, all non-relevant data is removed (No — Filter removes data rather than showing proportions)."
+      },
+      {
+        id: 41,
+        text: "Your company has a Power BI Premium license and you want to use the AI features in your report to expose insights. Which of the following two statements is NOT true?",
+        type: "multi",
+        options: [
+          "You can take a piece of text and return a list of key phrases",
+          "You can build your own machine learning models and use them in Power BI desktop",
+          "The decomposition tree requires a premium subscription",
+          "Sentiment Analysis is available for select languages",
+          "You cannot use Power BI to tag images"
+        ],
+        correct: [2, 4],
+        explanation: "You can take a piece of text and return a list of key phrases using Key Phrase Extraction (true). In Azure Machine Learning, you can create your own machine learning models, which can then be used within Power BI desktop (true). A decomposition tree is a standard AI visual and does NOT require a premium subscription (NOT true — this is a false statement). Sentiment Analysis is available for select languages (true). Power BI CAN tag images — you can use it for image tagging (NOT true — this is a false statement)."
+      },
+      {
+        id: 42,
+        text: "You have created a dashboard you want to share with your suppliers. Your supplier has a Power BI Pro license and uses Power BI within their own organization. Prior to sharing your dashboard with your supplier, what do you first need to do?",
+        type: "single",
+        options: [
+          "Make sure your supplier has upgraded to Power BI Premium",
+          "In the tenant settings, enable email notification service for outages or incidents",
+          "In the tenant settings, enable share content with external users",
+          "Publish your dashboard to the web"
+        ],
+        correct: [2],
+        explanation: "Users can share reports and dashboards with people outside your organization. The 'Share content with external users' setting is found in the Export and sharing settings group. Your supplier has Power BI Pro and does not need Power BI Premium to view your reports. Enabling email notifications for outages or incidents is not critical for sharing content outside your organization. Publishing your dashboard to the web will make the report available for anyone on the internet to see — since you only want to share with your supplier, this is not appropriate."
+      },
+      {
+        id: 43,
+        text: "You work for a software company that enables cryptocurrency payments for retailers. The key tables you have for your company's reporting requirements are:\n1. Date — a date table created in DAX\n2. Countries — a geographic table that is rarely updated\n3. Sales — has software sales to retailers and has many new records added every day\n\nWhich storage model should you use for each of the three requirements from top to bottom?",
+        type: "single",
+        options: [
+          "Import / Import / Live Connection",
+          "Dual / Import / Live Connection",
+          "Dual / Import / DirectQuery",
+          "Import / Import / DirectQuery"
+        ],
+        correct: [3],
+        explanation: "You should use the import mode for a calculated table and for the countries table. Since these tables will rarely change, import is the best option. The sales table should use DirectQuery as DirectQuery does not cache the data and is useful when using large amounts of data. You should not use dual storage mode — tables with dual setting can act as either cached or not cached depending on context. You should not use a Live Connection — this is used for streaming data such as Analysis Services from IoT devices."
+      },
+      {
+        id: 44,
+        text: "For your annual report, your company has produced a YouTube video. Your manager asks to add this YouTube video to your financial dashboard so the board members can see the video in the dashboard. How would you go about adding the YouTube video to your dashboard?",
+        type: "single",
+        options: [
+          "Add an image tile",
+          "Add a video tile",
+          "Add a text box tile",
+          "Add a custom streaming data tile"
+        ],
+        correct: [1],
+        explanation: "A video tile allows you to add a YouTube or Vimeo video to your dashboard — the video plays right on your dashboard. Do not use an image tile — that is used for a static image such as a logo. Do not use a text box tile — that is used to add headings. Do not add a custom streaming data tile — that is used for sensor data or feeds like Twitter."
+      },
+      {
+        id: 45,
+        text: "You have a large Power BI dashboard for stock prices that display weekly performance. The dataset goes back to 1985. When the dashboard refreshes it takes too long to load. How would you optimize the model performance?",
+        type: "single",
+        options: [
+          "Add a personal gateway to your organization's dataset",
+          "Add a streaming tile to your dashboard",
+          "Adjust the time zone in the tenant setting",
+          "Configure incremental refresh"
+        ],
+        correct: [3],
+        explanation: "Incremental refresh allows you to refresh large datasets quickly and as often as you need, without having to reload historical data each time. Filter parameters for the start (RangeStart) and end date (RangeEnd) range are configured within Power BI Desktop. A personal gateway does not assist with the large data set. A streaming tile is used for analysis service data. Changing the time zone in the tenant setting will not optimize the data performance."
+      },
+      {
+        id: 46,
+        text: "Your country has created a register for confirmed cases of COVID-19. The data is recorded in a large Azure SQL Database and is updated continuously. You have been contracted as a consultant to assist your government in creating a dashboard to visualize the data in Power BI. How would you configure your connection to the COVID-19 database?",
+        type: "single",
+        options: [
+          "Create a script to continuously import the data",
+          "Connect to the data with Live Connection",
+          "Connect to the data with DirectQuery",
+          "Connect to the data with AI Insights"
+        ],
+        correct: [2],
+        explanation: "DirectQuery is the best connection type for large datasets and no data is imported or copied into Power BI. Do not create a script to continuously import the data — to prevent the dataset from getting too large, use DirectQuery. Do not use AI Insights — AI Insights is a data visualization tool and not a data connection."
+      },
+      {
+        id: 47,
+        text: "You work for an electric engine manufacturer as a Power BI admin. You have two colleagues, Ray and Jane, who need access to your workspace. Ray will need to publish, unpublish, and change permissions for the apps. Jane needs to be able to publish reports to the workspace and delete content. What workspace roles should Ray and Jane be assigned?",
+        type: "single",
+        options: [
+          "Ray = Member / Jane = Contributor",
+          "Ray = Admin / Jane = Member",
+          "Ray = Member / Jane = Viewer",
+          "Ray = Member / Jane = Member"
+        ],
+        correct: [0],
+        explanation: "Ray should be assigned a member role. A member can publish, unpublish, and change permissions for the apps. Jane should be assigned a Contributor role. A contributor can publish reports to the workspace and delete content."
+      },
+      {
+        id: 48,
+        text: "Your company uses a transport provider that charges freight costs and fuel surcharge costs. How would you create a measure for the row-level average of the sum of freight and surcharge?",
+        type: "single",
+        options: [
+          "AVERAGE(Transport, Transport[Freight ($)] + Transport[Surcharge ($)])",
+          "SUMX(Transport, Transport[Freight ($)] + Transport[Surcharge ($)])",
+          "AVERAGEA(Transport, Transport[Freight ($)])",
+          "AVERAGEX(Transport, Transport[Freight ($)] + Transport[Surcharge ($)])"
+        ],
+        correct: [3],
+        explanation: "The AVERAGEX function enables you to evaluate expressions for each row of a table, and then take the resulting set of values and calculate its arithmetic mean. We can calculate the sum of freight + surcharge and then calculate the average across all rows using AVERAGEX. Do not use AVERAGE() — it takes the average of a single column and does not allow for an expression at a row-level. Do not use SUMX() — SUMX() would have to be combined with a COUNT function for the average. Do not use AVERAGEA() — AVERAGEA() takes a column and averages the numbers in it but does not allow for row-level expressions."
+      },
+      {
+        id: 49,
+        text: "You are checking your data for errors and want to see the average and standard deviation for a column. What data quality option should you use?",
+        type: "single",
+        options: [
+          "Column quality",
+          "Column distribution",
+          "Column profile",
+          "Monospaced"
+        ],
+        correct: [2],
+        explanation: "Column profile will give you a column distribution chart as well as key column statistics including average, standard deviation, min and max."
+      },
+      {
+        id: 50,
+        text: "You are the Power BI admin at your company. You have assigned a colleague as a member role in your workspace. What roles can she NOT perform?",
+        type: "single",
+        options: [
+          "Update an app",
+          "Manage dataset permissions",
+          "Update and delete the workspace",
+          "Allow others to reshare items"
+        ],
+        correct: [2],
+        explanation: "A member can perform all tasks, except the three admin roles: Update and delete the workspace; Add/remove people, including other admin; Allow contributors to update the app for the workspace."
+      },
+      {
+        id: 51,
+        text: "You work in a warehouse for a large eCommerce company. You have a Power BI Premium dashboard of the key logistics metrics called 'daily shipments'. You would like to receive a daily snapshot by email of the daily shipments dashboard. How can you achieve this goal?",
+        type: "single",
+        options: [
+          "Integrate the dashboard to Power BI Desktop",
+          "Ask the admin to add you as a contributor to the workspace",
+          "Subscribe to the dashboard",
+          "Turn on notifications on your instance of Power BI Service"
+        ],
+        correct: [2],
+        explanation: "When you subscribe to a dashboard, Power BI will email a snapshot to your inbox. You cannot integrate a dashboard to Power BI Desktop to receive a snapshot. Being added to a workspace as a contributor allows you to edit and publish content but does not help receive a daily snapshot. Notifications include updates to apps, alerts triggered on dashboards, and information about Power BI events, but do not send snapshots to your email."
+      },
+      {
+        id: 52,
+        text: "You are in Power Query Editor and see a histogram view across multiple columns showing distinct and unique item counts per column. What data profile tool shows this view?",
+        type: "single",
+        options: [
+          "Column distribution",
+          "Column quality",
+          "Column histogram",
+          "Column profile"
+        ],
+        correct: [0],
+        explanation: "The Column distribution shows a histogram of values and displays the number of distinct and unique items in a column. Column quality shows the percentage of Valid, Error and Empty cells. There is no option called Column histogram in Power Query Editor. Column profile shows a distribution of a single column together with a number of key statistics."
+      },
+      {
+        id: 53,
+        text: "You have two tables named Invoice and Geo that are connected through an active relationship using the GeoID field. You need to be able to filter the data from both the Geo table and from the Invoice table. You have configured row-level security (RLS) so that Geographic leaders can only see the invoices from their region. You are having difficulty getting RLS working for the relationship between the Geo and Invoices. Which TWO actions should you perform to resolve this issue?",
+        type: "multi",
+        options: [
+          "In the relationship view, set the cross filter direction to Single",
+          "In the relationship view, check apply security filter in both directions",
+          "In the relationship view, set the cross filter direction to Both",
+          "In the relationship view, uncheck make this relationship active"
+        ],
+        correct: [1, 2],
+        explanation: "To enable tables to be filtered in either direction, set the cross filter direction to Both. Also, to allow the security filter to work in both directions, check 'apply security filter in both directions'. Do not set the cross filter direction to Single — this will restrict the filtering in a single direction. Do not uncheck 'make this relationship active' — if you make the relationship inactive, the two tables will not be able to join together."
+      },
+      {
+        id: 54,
+        text: "Your company plans to use dataflows to process the data stored in the Common Data Service to prepare for Power BI reports and Dashboards. Where should you store the dataflows?",
+        type: "single",
+        options: [
+          "Common Data Model folder",
+          "Azure Data Lake Gen2",
+          "SharePoint",
+          "Azure SQL Server"
+        ],
+        correct: [1],
+        explanation: "You store your dataflows in Azure Data Lake Gen2. You can store the data from the dataflow using Common Data Model folders; however, you cannot store the dataflow itself in a Common Data Model folder. You cannot use SharePoint or Azure SQL Server to store your dataflows."
+      },
+      {
+        id: 55,
+        text: "You are a Power BI User Admin. Which TWO tasks can you perform?",
+        type: "multi",
+        options: [
+          "Manage subscriptions",
+          "Create and manage users and groups",
+          "Enable and disable Power BI features",
+          "Reset user passwords"
+        ],
+        correct: [1, 3],
+        explanation: "A Power BI User Admin can reset user passwords and create and manage users and groups. A Billing Admin can manage subscriptions. A Power Platform admin can enable and disable Power BI features."
+      },
+      {
+        id: 56,
+        text: "You want to share a dashboard with external guest users from another business. How would you share content with external users?",
+        type: "single",
+        options: [
+          "Invite external guests through the Azure Active Directory B2B",
+          "Click share directly from the dashboard",
+          "Go to the Power BI admin tenant setting and add the emails for the external users",
+          "Modify the workspace permissions to allow for the external users"
+        ],
+        correct: [0],
+        explanation: "Power BI enables sharing content with external guest users through Azure Active Directory Business-to-business (Azure AD B2B). By default, external guests can only view reports and dashboards. You cannot share a dashboard directly to external users this way. You cannot add external user emails in the tenant setting. You cannot modify workspace permissions to allow for external users."
+      },
+      {
+        id: 57,
+        text: "You think that a decomposition tree may be useful for your analysis. What TWO things does a decomposition tree do?",
+        type: "multi",
+        options: [
+          "Conduct root cause analysis",
+          "Segments that contribute to the selected metric value",
+          "Visualize data across multiple dimensions",
+          "Contrast the relative importance of factors"
+        ],
+        correct: [0, 2],
+        explanation: "A decomposition tree is used to visualize data across multiple dimensions and can be used to conduct root cause analysis. A key influencer visual creates segments that contribute to a selected metric value and contrasts the relative importance of factors."
+      },
+      {
+        id: 58,
+        text: "You have an Inventory table and a Date table and need to calculate a semi-additive measure for the closing inventory value. How would you complete the [VALUE] field in the DAX expression?\n\nLast Inventory Level =\nCALCULATE(\n  SUM(Inventory[Quantity]),\n  [VALUE]([VALUE])\n)",
+        type: "single",
+        options: [
+          "MAX / Date[Date]",
+          "LASTDATE / Inventory[MovementDate]",
+          "LASTNONBLANK / Inventory[MovementDate]",
+          "LASTDATE / Date[Date]"
+        ],
+        correct: [1],
+        explanation: "Use the LASTDATE function to get the last date of the Inventory[MovementDate] field. If you used the Date table with LASTDATE(Date[Date]), you may get a weekend or holiday when no inventory was recorded. Do not use MAX or LASTDATE with the Date[Date] field as you may get a weekend or holiday when no inventory was recorded. Do not use LASTNONBLANK as this function expects a column and an expression."
+      },
+      {
+        id: 59,
+        text: "How can you create a calculated table in Power BI?",
+        type: "single",
+        options: [
+          "By using the New Table feature and writing a DAX formula",
+          "By using the Group By feature",
+          "By creating a new column with a table formula",
+          "By using the Pivot Table feature"
+        ],
+        correct: [0],
+        explanation: "In Power BI, a calculated table is created by using the New Table feature and writing a DAX formula. DAX (Data Analysis Expressions) is a formula language used in Power BI to create custom calculations and aggregations. The Group By feature is used to group data based on one or more columns — it is not used to create a calculated table. Creating a new column with a table formula is used to add a new column to an existing table, not to create a calculated table. The Pivot Table feature is used to summarize and analyze data and is not used to create a calculated table."
+      },
+      {
+        id: 60,
+        text: "You are modeling data by using Microsoft Power BI. Part of the data model is a large Microsoft SQL Server table named Order that has more than 100 million records. During the development process, you need to import a sample of the data from the Order table.\n\nSolution: You write a DAX expression that uses the FILTER function.\n\nDoes this meet the goal?",
+        type: "single",
+        options: [
+          "A. Yes",
+          "B. No"
+        ],
+        correct: [1],
+        explanation: "Writing a DAX expression that uses the FILTER function will not import a sample of data from the Order table. The FILTER function is used to filter data within a table or column, but it does not import data. To import a sample of data from the Order table, you would need to use the Import Data feature in Power BI or write a SQL query to extract a sample of data from the table."
+      },
+      {
+        id: 61,
+        text: "What is the purpose of data aggregation?",
+        type: "single",
+        options: [
+          "To combine data from multiple sources",
+          "To remove outliers from the data",
+          "To replace missing data with estimated values",
+          "To transform data into a different format"
+        ],
+        correct: [0],
+        explanation: "Data aggregation is the process of combining data from multiple sources into a single dataset. This is done to gain a more comprehensive view of the data and to make it easier to analyze. By combining data from multiple sources, patterns and trends can be identified that may not have been apparent when looking at each source individually. While outliers can be removed, missing data replaced, or data transformed during aggregation, these are not the primary purpose."
+      },
+      {
+        id: 62,
+        text: "In Power Query, how does referencing a query differ from duplicating a query?",
+        type: "single",
+        options: [
+          "Referencing uses the original query as a lookup table.",
+          "Referencing works on external data sources, while duplicating does not.",
+          "When you reference a query, any changes to the original query fail to reflect in the new query.",
+          "Referencing uses the original query as the source and it can be used in other queries for further processing."
+        ],
+        correct: [3],
+        explanation: "Duplicate is generally used when you would like to create a similar query and you do not want to type the same code, and you can make changes to this query. Reference in Query means you would like to use that query's results in some other queries — the original query remains as a base query and it can be used in other queries for further processing."
+      },
+      {
+        id: 63,
+        text: "You have a custom connector that returns ID, From, To, Subject, Body, and Has Attachments for every email sent during the past year. More than 10 million records are returned. You build a report analyzing the internal networks of employees based on whom they send emails to. You need to prevent report recipients from reading the analyzed emails. The solution must minimize the model size. What should you do?",
+        type: "single",
+        options: [
+          "A. From Model view, set the Subject and Body columns to Hidden.",
+          "B. Remove the Subject and Body columns during the import.",
+          "C. Implement row-level security (RLS) so that the report recipients can only see results based on the emails they sent."
+        ],
+        correct: [1],
+        explanation: "By removing the Subject and Body columns during the import, you significantly reduce the amount of data stored in the Power BI model — this minimizes the model size and faster report performance. It also prevents report recipients from accessing the sensitive data since it is not stored in the model at all. Setting columns to Hidden in the Model view can make them invisible in reports, but the data is still stored in the model, leading to larger model sizes and potential security risks. RLS can restrict access to data but would be more complex to implement and might not be necessary if you can simply remove the sensitive columns during import."
+      }
+    ]
+  }
+};
+
+// ===== STATE =====
+let currentExam = null;
+let currentQ = 0;
+let userAnswers = {};   // { questionIndex: [selectedOptionIndices] }
+
+// ===== UTILS =====
+function $(id) { return document.getElementById(id); }
+function show(id) { $(id).style.display = ''; }
+function hide(id) { $(id).style.display = 'none'; }
+
+// ===== NAVIGATION =====
+function startExam(num) {
+  currentExam = EXAMS[num];
+  currentQ = 0;
+  userAnswers = {};
+  hide('landing');
+  hide('results-view');
+  $('exam-view').style.display = 'flex';
+  $('exam-view').style.flexDirection = 'column';
+  $('topbar-title').textContent = currentExam.title;
+  renderQuestion();
+  updateTopbarSubmit();
+}
+
+function goHome() {
+  hide('exam-view');
+  hide('results-view');
+  show('landing');
+}
+
+function retakeExam() {
+  const num = Object.keys(EXAMS).find(k => EXAMS[k] === currentExam);
+  startExam(parseInt(num));
+}
+
+function confirmExit() {
+  if (Object.keys(userAnswers).length > 0) {
+    if (!confirm('Are you sure you want to exit? Your progress will be lost.')) return;
+  }
+  goHome();
+}
+
+// ===== QUESTION RENDERER =====
+function renderQuestion() {
+  const q = currentExam.questions[currentQ];
+  const total = currentExam.questions.length;
+
+  // Progress bar: based on answered questions
+  const answeredCount = Object.keys(userAnswers).length;
+  const pct = (answeredCount / total) * 100;
+  $('progress-fill').style.width = pct + '%';
+  $('progress-info').textContent = (currentQ + 1) + ' / ' + total;
+
+  const ua = userAnswers[currentQ] || [];
+  const isMulti = q.type === 'multi';
+  const needed = isMulti ? q.correct.length : 1;
+
+  let html = `
+    <div class="question-meta">
+      <span class="q-number">Q${q.id}</span>
+      <span class="q-category">PL-300</span>
+      ${isMulti ? `<span class="q-multi-badge">Select ${needed}</span>` : ''}
+    </div>
+    <div class="question-text">${formatText(q.text)}</div>
+    <div class="options-list">
+  `;
+
+  q.options.forEach((opt, i) => {
+    const isSelected = ua.includes(i);
+    const cls = 'option-item' + (isSelected ? ' selected' : '');
+    const marker = String.fromCharCode(65 + i);
+    html += `
+      <button class="${cls}" onclick="selectOption(${i})">
+        <div class="option-marker">${marker}</div>
+        <div class="option-text">${formatText(opt)}</div>
+      </button>
+    `;
+  });
+
+  html += `</div>`;
+
+  // ── Navigation row ──
+  html += `<div class="nav-buttons">`;
+
+  // Left: Previous
+  html += `<button class="btn btn-secondary" onclick="prevQ()" ${currentQ === 0 ? 'disabled' : ''}>&#8592; Previous</button>`;
+
+  // Center: answered indicator dots (mini overview, max 10 shown around current)
+  html += buildMiniNav(currentQ, total);
+
+  // Right: Next or Submit
+  if (currentQ < total - 1) {
+    html += `<button class="btn btn-primary" onclick="nextQ()">Next &#8594;</button>`;
+  } else {
+    // On last question show Submit
+    html += `<button class="btn btn-submit" onclick="confirmSubmit()">Submit Answers</button>`;
+  }
+
+  html += `</div>`;
+
+  $('question-area').innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function buildMiniNav(current, total) {
+  // Show up to 9 dot indicators centred around current question
+  const MAX = 9;
+  let start = Math.max(0, current - Math.floor(MAX / 2));
+  let end = Math.min(total, start + MAX);
+  if (end - start < MAX) start = Math.max(0, end - MAX);
+
+  let dots = `<div class="mini-nav">`;
+  if (start > 0) dots += `<span class="mini-nav-ellipsis">…</span>`;
+  for (let i = start; i < end; i++) {
+    const answered = userAnswers[i] && userAnswers[i].length > 0;
+    const isCurrent = i === current;
+    let cls = 'mini-dot';
+    if (isCurrent) cls += ' mini-dot-current';
+    else if (answered) cls += ' mini-dot-answered';
+    dots += `<button class="${cls}" onclick="goToQ(${i})" title="Q${i+1}">${i + 1}</button>`;
+  }
+  if (end < total) dots += `<span class="mini-nav-ellipsis">…</span>`;
+  dots += `</div>`;
+  return dots;
+}
+
+function formatText(txt) {
+  if (!txt) return '';
+  return txt.replace(/\n/g, '<br>');
+}
+
+// ===== ANSWER SELECTION =====
+function selectOption(idx) {
+  const q = currentExam.questions[currentQ];
+  if (!userAnswers[currentQ]) userAnswers[currentQ] = [];
+  const ua = userAnswers[currentQ];
+
+  if (q.type === 'single') {
+    userAnswers[currentQ] = [idx];
+  } else {
+    const pos = ua.indexOf(idx);
+    if (pos === -1) ua.push(idx);
+    else ua.splice(pos, 1);
+  }
+  renderQuestion();
+  updateTopbarSubmit();
+}
+
+// ===== NAVIGATION =====
+function nextQ() {
+  if (currentQ < currentExam.questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  }
+}
+
+function prevQ() {
+  if (currentQ > 0) {
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+function goToQ(idx) {
+  currentQ = idx;
+  renderQuestion();
+}
+
+// ===== TOPBAR SUBMIT BUTTON =====
+function updateTopbarSubmit() {
+  const btn = $('topbar-submit');
+  if (!btn) return;
+  const total = currentExam.questions.length;
+  const answered = Object.keys(userAnswers).filter(k => userAnswers[k].length > 0).length;
+  btn.textContent = `Submit Answers (${answered}/${total})`;
+}
+
+// ===== SUBMIT CONFIRMATION =====
+function confirmSubmit() {
+  const total = currentExam.questions.length;
+  const answered = Object.keys(userAnswers).filter(k => userAnswers[k].length > 0).length;
+  const unanswered = total - answered;
+
+  if (unanswered > 0) {
+    if (!confirm(`You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Are you sure you want to submit?`)) return;
+  } else {
+    if (!confirm('Submit your exam? You will not be able to change your answers.')) return;
+  }
+  showResults();
+}
+
+// ===== RESULTS =====
+function showResults() {
+  const qs = currentExam.questions;
+  let correct = 0;
+
+  qs.forEach((q, idx) => {
+    const ua = userAnswers[idx] || [];
+    const ca = q.correct;
+    const isCorrect = ua.length === ca.length && ca.every(c => ua.includes(c));
+    if (isCorrect) correct++;
+  });
+
+  const total = qs.length;
+  const incorrect = total - correct;
+  const pct = Math.round((correct / total) * 100);
+
+  hide('exam-view');
+  $('results-view').style.display = 'block';
+
+  $('score-pct').textContent = pct + '%';
+  $('stat-correct').textContent = correct;
+  $('stat-incorrect').textContent = incorrect;
+  $('stat-total').textContent = total;
+
+  const passThreshold = 70;
+  const passed = pct >= passThreshold;
+  $('results-title').textContent = passed ? 'Well done!' : 'Keep practicing';
+  $('results-subtitle').textContent = passed
+    ? `You passed with ${pct}%. The passing threshold is ${passThreshold}%.`
+    : `You scored ${pct}%. The passing threshold is ${passThreshold}%. Review the questions below.`;
+
+  // Animate ring
+  const circumference = 364.4;
+  const offset = circumference - (pct / 100) * circumference;
+  $('score-arc').style.transition = 'stroke-dashoffset 1s ease';
+  $('score-arc').style.stroke = passed ? '#2ea043' : '#da3633';
+  setTimeout(() => { $('score-arc').style.strokeDashoffset = offset; }, 100);
+
+  // Review — only wrong / unanswered
+  let reviewHTML = '';
+  const wrongQuestions = qs.filter((q, idx) => {
+    const ua = userAnswers[idx] || [];
+    return !(ua.length === q.correct.length && q.correct.every(c => ua.includes(c)));
+  });
+
+  if (wrongQuestions.length === 0) {
+    reviewHTML = '<p style="color:var(--correct-light);text-align:center;padding:20px;font-size:1rem;">🎉 Perfect score! All answers correct.</p>';
+  } else {
+    reviewHTML = `<h2>Questions to Review (${wrongQuestions.length})</h2>`;
+    wrongQuestions.forEach(q => {
+      const idx = qs.indexOf(q);
+      const ua = userAnswers[idx] || [];
+
+      reviewHTML += `<div class="review-card">
+        <div class="review-card-header">
+          <span class="review-q-num">Q${q.id}</span>
+          <div class="review-q-text">${formatText(q.text)}</div>
+        </div>
+        <div class="review-answers">`;
+
+      if (ua.length > 0) {
+        ua.forEach(i => {
+          if (!q.correct.includes(i)) {
+            reviewHTML += `<div class="review-answer-row your-wrong">
+              <span class="ans-label">Your answer</span>
+              <span>${q.options[i]}</span>
+            </div>`;
+          }
+        });
+      } else {
+        reviewHTML += `<div class="review-answer-row your-wrong">
+          <span class="ans-label">Your answer</span>
+          <span><em>Not answered</em></span>
+        </div>`;
+      }
+
+      q.correct.forEach(ci => {
+        reviewHTML += `<div class="review-answer-row correct-ans">
+          <span class="ans-label">Correct</span>
+          <span>${q.options[ci]}</span>
+        </div>`;
+      });
+
+      reviewHTML += `</div>
+        <div class="review-explanation">
+          <strong>Explanation</strong>
+          ${q.explanation}
+        </div>
+      </div>`;
+    });
+  }
+
+  $('review-section').innerHTML = reviewHTML;
+  window.scrollTo(0, 0);
+}
+
+// Init
+show('landing');
+$('exam-view').style.display = 'none';
+$('results-view').style.display = 'none';
+</script>
+</body>
+</html>
